@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+const handler = async (req, res) => {
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, message: 'Method Not Allowed' });
   }
@@ -67,4 +67,11 @@ export default async function handler(req, res) {
       runtime: 'vercel-node'
     });
   }
+};
+
+export default handler;
+
+// Some Vercel Node runtimes/loaders resolve CommonJS handler exports.
+if (typeof module !== 'undefined') {
+  module.exports = handler;
 }
