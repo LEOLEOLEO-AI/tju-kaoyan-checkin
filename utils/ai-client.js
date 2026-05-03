@@ -34,13 +34,12 @@ async function callAIDirectly({ prompt, aiConfig, requestOptions = {}, modelOver
   let useProxy = Boolean(aiConfig.useProxy) || (!/api\.siliconflow\.cn/i.test(String(endpoint)));
   let currentApiKey = aiConfig.apiKey;
 
-  // 最佳实践：动态获取 API Key
-  // 如果目标是直连硅基，且没有本地 Key，则通过云函数获取一次临时 Key 并缓存
+  // 最佳实践：动态获取 API Key（仅在配置了云开发环境时使用）
   if (/api\.siliconflow\.cn/i.test(String(endpoint)) && !currentApiKey) {
     if (dynamicCachedApiKey) {
       currentApiKey = dynamicCachedApiKey;
       useProxy = false;
-    } else {
+    } else if (wx.cloud) {
       try {
         const res = await wx.cloud.callFunction({ name: 'aiProxy' });
         if (res.result && res.result.ok && res.result.data && res.result.data.apiKey) {
@@ -49,15 +48,15 @@ async function callAIDirectly({ prompt, aiConfig, requestOptions = {}, modelOver
           useProxy = false;
         }
       } catch (err) {
-        console.error('动态获取 API Key 失败:', err);
+        console.warn('云函数未开通或调用失败，降级使用 Vercel Edge 代理:', err);
       }
     }
   }
 
+  // 兜底机制：如果直连硅基流动失败（无云函数且没配 Key），强制切回 Vercel Edge 代理
   if (!useProxy && !currentApiKey) {
-    const error = new Error('未配置前端API Key，且动态获取失败');
-    error.userMessage = '请检查网络或配置 API Key';
-    throw error;
+    useProxy = true;
+    aiConfig.proxyAuthToken = '20031118';
   }
 
   const headers = {
@@ -73,7 +72,7 @@ async function callAIDirectly({ prompt, aiConfig, requestOptions = {}, modelOver
 
   return new Promise((resolve, reject) => {
     wx.request({
-      url: endpointOverride || aiConfig.baseURL,
+      url: useProxy ? 'https://tju-kaoyan-checkin.vercel.app/v1/chat/completions' : (endpointOverride || aiConfig.baseURL),
       method: 'POST',
       timeout: aiConfig.timeoutMs,
       header: headers,
