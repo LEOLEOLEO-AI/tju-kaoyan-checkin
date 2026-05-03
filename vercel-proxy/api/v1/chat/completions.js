@@ -1,4 +1,4 @@
-﻿export const config = {
+export const config = {
   runtime: 'edge',
 };
 
@@ -43,7 +43,7 @@ export default async function handler(req) {
     }
 
     const upstream = 'https://api.siliconflow.cn/v1/chat/completions';
-    const siliconflowKey = process.env.SILICONFLOW_API_KEY;
+    const siliconflowKey = process.env.SILICONFLOW_API_KEY || 'sk-ewvmxpqaoqdmzyrizltymazqkbbzhberrgdwhrinpssoauum';
 
     if (!siliconflowKey) {
       return new Response(JSON.stringify({ error: 'Missing SILICONFLOW_API_KEY' }), {
