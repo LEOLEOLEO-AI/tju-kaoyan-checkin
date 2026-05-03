@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "api/v1/chat/completions.js": {
+      "runtime": "nodejs20.x"
+    }
+  },
   "rewrites": [
     {
       "source": "/v1/chat/completions",
