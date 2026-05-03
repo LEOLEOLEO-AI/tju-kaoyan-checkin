@@ -1,0 +1,116 @@
+<view class="container">
+  <view class="card header-card">
+    <text class="title">2026 天津大学测控考研</text>
+    <view class="countdown">
+      <text class="days">{{daysLeft}}</text>
+      <text class="unit">天</text>
+    </view>
+    <view class="info-bar">
+      <text>剩余 {{weeksLeft}} 周</text>
+      <view class="divider"></view>
+      <text>目标: 考上!</text>
+    </view>
+  </view>
+
+  <view class="stats-grid">
+    <view class="stat-card">
+      <text class="stat-label">累计复习</text>
+      <view class="stat-value">
+        <text class="num">{{totalHoursAllTime}}</text>
+        <text class="unit">小时</text>
+      </view>
+    </view>
+    <view class="stat-card">
+      <text class="stat-label">平均掌握度</text>
+      <view class="stat-value">
+        <text class="num">{{averageUnderstanding}}</text>
+        <text class="unit">/5.0</text>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-title">今日复习</view>
+  <view class="card">
+    <view class="today-total">
+      <text class="label">总时长</text>
+      <text class="value">{{hoursToday}} 小时 {{minutesToday}} 分钟</text>
+    </view>
+    
+    <block wx:if="{{todayLogs.length > 0}}">
+      <view class="log-list">
+        <view class="log-item" wx:for="{{todayLogs}}" wx:key="id">
+          <view class="log-info">
+            <view class="dot" style="background-color: {{item.subjectColor}}"></view>
+            <view class="log-text">
+              <text class="log-subject">{{item.subjectName}}</text>
+              <text class="log-content">{{item.content}}</text>
+            </view>
+          </view>
+          <text class="log-duration">{{item.duration}} min</text>
+        </view>
+      </view>
+    </block>
+    <block wx:else>
+      <view class="empty-state">今天还没有打卡记录哦，快去学习吧！</view>
+    </block>
+  </view>
+
+  <view class="card milestones-card">
+    <view class="section-title" style="margin-bottom: 30rpx;">复习阶段目标</view>
+    <view class="timeline">
+      <view class="timeline-item">
+        <view class="timeline-dot"></view>
+        <view class="timeline-content">
+          <text class="tl-date">2026-09-30</text>
+          <text class="tl-desc">完成第一遍复习 (基础)</text>
+        </view>
+      </view>
+      <view class="timeline-item">
+        <view class="timeline-dot"></view>
+        <view class="timeline-content">
+          <text class="tl-date">2026-11-30</text>
+          <text class="tl-desc">完成第二遍复习 (强化)</text>
+        </view>
+      </view>
+      <view class="timeline-item">
+        <view class="timeline-dot"></view>
+        <view class="timeline-content">
+          <text class="tl-date">2026-12-15</text>
+          <text class="tl-desc">查漏补缺完成 (冲刺)</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="section-title">复习进度分析</view>
+  <view class="card progress-card">
+    <view class="overall-progress">
+      <view class="progress-header">
+        <text class="progress-title">整体复习进度</text>
+        <text class="progress-percent">{{overallProgress}}%</text>
+      </view>
+      <view class="progress-bar-bg">
+        <view class="progress-bar-fill" style="width: {{overallProgress}}%; background: linear-gradient(90deg, #6366f1, #a855f7);"></view>
+      </view>
+    </view>
+
+    <view class="subject-progress-list">
+      <view class="subject-progress-item" wx:for="{{subjectStats}}" wx:key="id">
+        <view class="sub-prog-info">
+          <text class="sub-name">{{item.name}}</text>
+          <text class="sub-hours">{{item.totalHours}} / {{item.totalTarget}} h</text>
+        </view>
+        <view class="progress-bar-bg small">
+          <view class="progress-bar-fill" style="width: {{item.progress}}%; background-color: {{item.color}};"></view>
+        </view>
+      </view>
+    </view>
+
+    <view class="gap-filling-estimate" style="background-color: {{gapFillingBg}}; border-left-color: {{gapFillingColor}};">
+      <text class="gap-title" style="color: {{gapFillingColor}};">预估查漏补缺</text>
+      <text class="gap-desc" style="color: {{gapFillingColor}};">{{gapFillingMsg}}</text>
+    </view>
+  </view>
+
+  <view class="clear-data-btn" bindtap="clearData">清除测试数据</view>
+</view>

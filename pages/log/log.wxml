@@ -1,0 +1,60 @@
+<view class="container">
+  <view class="header">
+    <text class="title">今日打卡</text>
+    <text class="subtitle">记录你的复习进度</text>
+  </view>
+
+  <view class="form-card">
+    <view class="form-group">
+      <text class="label">复习科目</text>
+      <view class="subject-grid">
+        <view 
+          class="subject-item {{subjectId === item.id ? 'active' : ''}}" 
+          wx:for="{{subjects}}" 
+          wx:key="id"
+          bindtap="selectSubject"
+          data-id="{{item.id}}"
+        >
+          {{item.name}}
+        </view>
+      </view>
+    </view>
+
+    <view class="form-group">
+      <text class="label">复习时长 (分钟)</text>
+      <input 
+        type="number" 
+        class="input-field" 
+        value="{{duration}}" 
+        bindinput="inputDuration" 
+      />
+    </view>
+
+    <view class="form-group">
+      <text class="label">复习内容与总结</text>
+      <textarea 
+        class="textarea-field" 
+        value="{{content}}" 
+        bindinput="inputContent" 
+        placeholder="例如：完成了电路原理第一章习题..."
+      ></textarea>
+    </view>
+
+    <view class="form-group">
+      <text class="label">掌握程度 (1-5)</text>
+      <view class="level-grid">
+        <view 
+          class="level-item {{understanding === item ? 'active' : ''}}" 
+          wx:for="{{[1,2,3,4,5]}}" 
+          wx:key="*this"
+          bindtap="selectLevel"
+          data-level="{{item}}"
+        >
+          {{item}}
+        </view>
+      </view>
+    </view>
+
+    <button class="submit-btn" bindtap="submitLog">完成打卡</button>
+  </view>
+</view>

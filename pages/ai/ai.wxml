@@ -1,0 +1,85 @@
+<view class="container">
+  <view class="header">
+    <text class="title">AI 导师辅导</text>
+    <text class="subtitle">当日 / 当周 / 整体进度智能分析</text>
+  </view>
+
+  <view class="mode-tabs">
+    <view
+      wx:for="{{modes}}"
+      wx:key="key"
+      class="mode-tab {{selectedMode === item.key ? 'mode-tab-active' : ''}}"
+      data-mode="{{item.key}}"
+      bindtap="switchMode"
+    >
+      <text>{{item.label}}</text>
+    </view>
+  </view>
+
+  <view class="momentum-card">
+    <view class="momentum-head">
+      <text class="momentum-title">{{momentum.levelTitle}}</text>
+      <text class="momentum-streak">连续打卡 {{momentum.streakDays}} 天</text>
+    </view>
+    <view class="momentum-progress">
+      <view class="momentum-progress-inner" style="width: {{momentum.completion}}%;"></view>
+    </view>
+    <view class="momentum-meta">
+      <text>本周完成 {{momentum.totalHours}}h / 目标 {{momentum.targetHours}}h</text>
+      <text>{{momentum.completion}}%</text>
+    </view>
+    <text class="momentum-message">{{momentum.message}}</text>
+  </view>
+
+  <block wx:if="{{!currentReview}}">
+    <view class="card empty-card">
+      <text class="empty-title">生成{{selectedMode === 'daily' ? '当日' : selectedMode === 'weekly' ? '当周' : '整体'}}复习报告</text>
+      <text class="empty-desc">AI 将根据你的打卡记录，给出可执行的复习建议与针对性测试题。</text>
+      <button class="generate-btn" bindtap="generateReview" disabled="{{loading}}">
+        {{loading ? '正在分析中...' : '开始生成'}}
+      </button>
+    </view>
+  </block>
+
+  <block wx:else>
+    <view class="review-content">
+      <view class="allocation-card" wx:if="{{currentReview.hasAllocation}}">
+        <text class="allocation-title">本周时间分配建议</text>
+        <view class="allocation-item" wx:for="{{currentReview.allocationCards}}" wx:key="name">
+          <view class="allocation-top">
+            <text class="allocation-name">{{item.name}}</text>
+            <text class="allocation-percent">{{item.percent}}%</text>
+          </view>
+          <view class="allocation-track">
+            <view class="allocation-fill" style="width: {{item.width}}%; background: {{item.color}};"></view>
+          </view>
+        </view>
+      </view>
+
+      <view class="eval-card">
+        <view class="eval-head">
+          <text class="eval-title">导师评价与建议</text>
+          <text class="source-tag {{currentReview.sourceClass}}">{{currentReview.sourceText}}</text>
+        </view>
+        <rich-text class="eval-text" nodes="{{currentReview.evaluationHtml}}"></rich-text>
+      </view>
+
+      <view class="quiz-card">
+        <text class="quiz-title">{{selectedMode === 'daily' ? '当日巩固测试' : selectedMode === 'weekly' ? '当周知识点测试' : '整体能力测试'}}</text>
+        <view class="quiz-item" wx:for="{{currentReview.quiz}}" wx:key="index">
+          <rich-text class="question" nodes="{{item.questionHtml}}"></rich-text>
+          <view class="answer-box" bindtap="toggleAnswer" data-index="{{index}}">
+            <view class="answer-mask" wx:if="{{!item.showAnswer}}">
+              <text class="mask-text">点击查看答案</text>
+            </view>
+            <rich-text class="answer" wx:else nodes="{{item.answerHtml}}"></rich-text>
+          </view>
+        </view>
+      </view>
+
+      <button class="regenerate-btn" bindtap="generateReview" disabled="{{loading}}">
+        {{loading ? '重新生成中...' : '重新生成当前分析'}}
+      </button>
+    </view>
+  </block>
+</view>

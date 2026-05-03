@@ -1,0 +1,10 @@
+page {
+  background-color: #f3f4f6;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica,
+    Segoe UI, Arial, Roboto, 'PingFang SC', 'miui', 'Hiragino Sans GB', 'Microsoft Yahei',
+    sans-serif;
+}
+.container {
+  padding: 30rpx;
+  box-sizing: border-box;
+}
