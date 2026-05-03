@@ -52,14 +52,22 @@ export default async function handler(req) {
       });
     }
 
+    // 为了防止 Vercel Edge 等待上游大模型生成时发生 504 Gateway Timeout，
+    // 我们必须向下游小程序传递上游大模型的超时错误，而不是直接崩溃。
+    const abortController = new AbortController();
+    const timeoutId = setTimeout(() => abortController.abort(), 23000); // Vercel Edge 免费版硬限制是 25 秒，这里设为 23 秒保底
+
     const resp = await fetch(upstream, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${siliconflowKey}`
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
+      signal: abortController.signal
     });
+    
+    clearTimeout(timeoutId);
 
     return new Response(resp.body, {
       status: resp.status,
@@ -69,8 +77,8 @@ export default async function handler(req) {
       }
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message }), {
-      status: 502,
+    return new Response(JSON.stringify({ error: err.name === 'AbortError' ? 'Upstream generation timeout' : err.message }), {
+      status: 504,
       headers: { 'content-type': 'application/json; charset=utf-8' }
     });
   }
