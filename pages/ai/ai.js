@@ -569,7 +569,7 @@ Page({
         fallbackPrompt,
         requestOptions: {
           maxTokens: mode === 'daily' ? 900 : mode === 'weekly' ? 1100 : 1200,
-          maxTotalMs: mode === 'daily' ? 25000 : mode === 'weekly' ? 35000 : 45000,
+          maxTotalMs: mode === 'daily' ? 18000 : mode === 'weekly' ? 20000 : 20000,
           modelCandidates: mode === 'daily'
             ? ['Qwen/Qwen2.5-72B-Instruct', 'Pro/deepseek-ai/DeepSeek-V3.2', 'Qwen/Qwen2.5-32B-Instruct', 'deepseek-ai/DeepSeek-V3']
             : mode === 'weekly'
