@@ -1,4 +1,4 @@
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ ok: false, message: 'Method Not Allowed' });
   }
@@ -15,7 +15,14 @@ export default async function handler(req, res) {
       return res.status(500).json({ ok: false, message: 'Missing SILICONFLOW_API_KEY' });
     }
 
-    const body = req.body || {};
+    let body = req.body || {};
+    if (typeof body === 'string') {
+      try {
+        body = JSON.parse(body);
+      } catch (e) {
+        return res.status(400).json({ ok: false, message: `Invalid JSON body: ${e.message}` });
+      }
+    }
     const payload = {
       model: body.model,
       messages: body.messages,
@@ -54,6 +61,10 @@ export default async function handler(req, res) {
     const message = error && error.name === 'AbortError'
       ? 'Upstream timeout'
       : (error && error.message) || 'Unknown error';
-    return res.status(500).json({ ok: false, message });
+    return res.status(500).json({
+      ok: false,
+      message,
+      runtime: 'vercel-node'
+    });
   }
-}
+};
