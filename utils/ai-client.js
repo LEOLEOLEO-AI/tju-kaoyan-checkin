@@ -144,7 +144,7 @@ async function requestAIReviewWithCache({ weekKey, logSummary, prompt, fallbackP
     ? requestOptions.proxyBaseURLs
     : (aiConfig.useProxy ? aiConfig.proxyBaseURLs : [aiConfig.baseURL]);
   const startedAt = Date.now();
-  const maxTotalMs = Math.max(6000, Number(requestOptions.maxTotalMs || 20000));
+  const maxTotalMs = Math.max(6000, Number(requestOptions.maxTotalMs || 30000));
   const cacheKey = `${weekKey}:${hashString(`${prompt}|${logSummary}|${modelCandidates.join('|')}|${endpointCandidates.join('|')}`)}`;
 
   const cached = getCacheEntry(cacheKey, aiConfig.cacheTTL);

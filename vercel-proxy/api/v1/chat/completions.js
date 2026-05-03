@@ -54,8 +54,9 @@ export default async function handler(req) {
 
     // 为了防止 Vercel Edge 等待上游大模型生成时发生 504 Gateway Timeout，
     // 我们必须向下游小程序传递上游大模型的超时错误，而不是直接崩溃。
+    // 注意：如果是 Vercel Pro/Hobby，Edge Runtime 理论上可达 25s - 30s。
     const abortController = new AbortController();
-    const timeoutId = setTimeout(() => abortController.abort(), 23000); // Vercel Edge 免费版硬限制是 25 秒，这里设为 23 秒保底
+    const timeoutId = setTimeout(() => abortController.abort(), 24000); 
 
     const resp = await fetch(upstream, {
       method: 'POST',

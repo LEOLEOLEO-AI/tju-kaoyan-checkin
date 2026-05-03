@@ -18,7 +18,7 @@ const DEFAULT_AI_CONFIG = {
   proxyBaseURLs: [
     'https://tju-kaoyan-checkin.vercel.app/v1/chat/completions'
   ],
-  timeoutMs: 45000,
+  timeoutMs: 25000,
   retryCount: 0,
   cacheTTL: 15 * 60 * 1000
 };
