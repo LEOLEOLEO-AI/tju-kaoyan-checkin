@@ -11,13 +11,14 @@ const DEFAULT_AI_CONFIG = {
   temperature: 0.45,
   max_tokens: 1200,
   apiKey: '',
-  useProxy: true,
-  proxyAuthToken: '20031118',
-  baseURL: 'https://your-vercel-app.vercel.app/v1/chat/completions',
+  useProxy: false,
+  proxyAuthToken: '',
+  baseURL: 'https://api.siliconflow.cn/v1/chat/completions',
   proxyBaseURLs: [
-    'https://your-vercel-app.vercel.app/v1/chat/completions'
+    'https://api.siliconflow.cn/v1/chat/completions',
+    'https://tju-kaoyan-checkin.vercel.app/v1/chat/completions'
   ],
-  timeoutMs: 16000,
+  timeoutMs: 45000,
   retryCount: 0,
   cacheTTL: 15 * 60 * 1000
 };
@@ -57,15 +58,10 @@ function sanitizeConfig(rawConfig = {}) {
 function getAIConfig() {
   const userConfig = wx.getStorageSync(AI_CONFIG_STORAGE_KEY) || {};
   const merged = { ...DEFAULT_AI_CONFIG, ...userConfig };
-  // 兼容旧版本配置：自动迁移到 Vercel 单后端，避免仍走 siliconflow 或 workers 旧链路。
-  if (
-    /api\.siliconflow\.cn/i.test(String(merged.baseURL || '')) ||
-    /workers\.dev/i.test(String(merged.baseURL || ''))
-  ) {
-    merged.useProxy = true;
+  // 新版架构：优先使用云函数下发 Key + 硅基直连，不再强制重写为 proxy
+  if (/workers\.dev/i.test(String(merged.baseURL || ''))) {
     merged.baseURL = DEFAULT_AI_CONFIG.baseURL;
     merged.proxyBaseURLs = DEFAULT_AI_CONFIG.proxyBaseURLs.slice();
-    merged.apiKey = '';
   }
   return sanitizeConfig(merged);
 }

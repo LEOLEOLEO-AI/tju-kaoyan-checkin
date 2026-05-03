@@ -27,11 +27,36 @@ function setCacheEntry(key, value) {
   wx.setStorageSync(AI_CACHE_STORAGE_KEY, cacheMap);
 }
 
-function callAIDirectly({ prompt, aiConfig, requestOptions = {}, modelOverride = '', endpointOverride = '' }) {
-  const useProxy = Boolean(aiConfig.useProxy) || !/api\.siliconflow\.cn/i.test(String(aiConfig.baseURL || ''));
-  if (!useProxy && !aiConfig.apiKey) {
-    const error = new Error('未配置前端API Key');
-    error.userMessage = '请先配置 AI API Key';
+let dynamicCachedApiKey = '';
+
+async function callAIDirectly({ prompt, aiConfig, requestOptions = {}, modelOverride = '', endpointOverride = '' }) {
+  const endpoint = endpointOverride || aiConfig.baseURL;
+  let useProxy = Boolean(aiConfig.useProxy) || (!/api\.siliconflow\.cn/i.test(String(endpoint)));
+  let currentApiKey = aiConfig.apiKey;
+
+  // 最佳实践：动态获取 API Key
+  // 如果目标是直连硅基，且没有本地 Key，则通过云函数获取一次临时 Key 并缓存
+  if (/api\.siliconflow\.cn/i.test(String(endpoint)) && !currentApiKey) {
+    if (dynamicCachedApiKey) {
+      currentApiKey = dynamicCachedApiKey;
+      useProxy = false;
+    } else {
+      try {
+        const res = await wx.cloud.callFunction({ name: 'aiProxy' });
+        if (res.result && res.result.ok && res.result.data && res.result.data.apiKey) {
+          dynamicCachedApiKey = res.result.data.apiKey;
+          currentApiKey = dynamicCachedApiKey;
+          useProxy = false;
+        }
+      } catch (err) {
+        console.error('动态获取 API Key 失败:', err);
+      }
+    }
+  }
+
+  if (!useProxy && !currentApiKey) {
+    const error = new Error('未配置前端API Key，且动态获取失败');
+    error.userMessage = '请检查网络或配置 API Key';
     throw error;
   }
 
@@ -43,7 +68,7 @@ function callAIDirectly({ prompt, aiConfig, requestOptions = {}, modelOverride =
       headers['x-proxy-token'] = aiConfig.proxyAuthToken;
     }
   } else {
-    headers.Authorization = `Bearer ${aiConfig.apiKey}`;
+    headers.Authorization = `Bearer ${currentApiKey}`;
   }
 
   return new Promise((resolve, reject) => {
@@ -120,7 +145,7 @@ async function requestAIReviewWithCache({ weekKey, logSummary, prompt, fallbackP
     ? requestOptions.proxyBaseURLs
     : (aiConfig.useProxy ? aiConfig.proxyBaseURLs : [aiConfig.baseURL]);
   const startedAt = Date.now();
-  const maxTotalMs = Math.max(6000, Number(requestOptions.maxTotalMs || 18000));
+  const maxTotalMs = Math.max(6000, Number(requestOptions.maxTotalMs || 35000));
   const cacheKey = `${weekKey}:${hashString(`${prompt}|${logSummary}|${modelCandidates.join('|')}|${endpointCandidates.join('|')}`)}`;
 
   const cached = getCacheEntry(cacheKey, aiConfig.cacheTTL);
